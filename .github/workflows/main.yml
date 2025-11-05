@@ -1,0 +1,57 @@
+name: Build and Deploy VS Code Web
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Clone VS Code source
+        run: |
+          git clone --depth=1 https://github.com/microsoft/vscode.git
+          cd vscode
+
+      - name: Install dependencies
+        working-directory: vscode
+        run: npm ci
+
+      - name: Build web version
+        working-directory: vscode
+        run: npm run web
+
+      - name: Copy build output
+        run: |
+          mkdir public
+          cp -r vscode/out/vscode-web/* public/
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
