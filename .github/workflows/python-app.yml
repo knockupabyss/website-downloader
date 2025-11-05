@@ -38,10 +38,9 @@ jobs:
       - name: 🚀 Smoke-test (5 pages)
         run: |
           python website-downloader.py \
-                 --url "https://harsim.ca/" \
+                 --url "https://vscode.dev" \
                  --destination "_mirror" \
-                 --max-pages 5
-
+                 
       # 5️⃣ Upload artefact for inspection
       - name: 📤 Upload mirrored site
         uses: actions/upload-artifact@v4
